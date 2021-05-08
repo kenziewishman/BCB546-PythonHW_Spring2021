@@ -1,0 +1,152 @@
+﻿#Contributors: Dr. X, McKenzie Wishman
+
+
+## Using data bears_cytb.fasta and bears_mass.csv we translate DNA into protein, calculate molecular weight and GC content, and add it to the table. We also graph mass by species and molecular weight by GC content.
+	
+
+#Download files:
+bears_mass.csv
+bears_cytb.fasta
+
+
+
+
+#Install Packages:
+Biopython
+pandas
+matplotlib
+
+
+
+
+	> from Bio import SeqIO
+	> from Bio.Data import CodonTable
+	> import pandas as pd
+	
+
+
+
+	#%%%%%%%%%%%%%%%#
+	### FUNCTIONS ###
+	#%%%%%%%%%%%%%%%#
+	
+
+
+
+	## 1 ##
+	####### Input fasta file and pull out species name/sequence #######
+	> def pull_sequences(fasta_fn):
+	   seq_data = {}
+	    for record in SeqIO.parse(fasta_fn, "fasta"):
+	       description = record.description.split()
+	       species = description[1] + " " + description[2]
+	       sequence_data[species] = record.seq
+	   return(seq_data)
+	
+
+
+
+	## 2 ##
+	####### TRANSLATE FUNCTION ########
+	> def translate(string_nucleotides): 
+mito_table = CodonTable.unambiguous_dna_by_name["Vertebrate Mitochondrial"]
+for n in range(0, len(string_nucleotides), 3):
+            if string_nucleotides[n:n+3] in mito_table:
+                aa_seq_string += mito_table[string_nucleotides[n:n+3]]
+            return(aa_seq_string)
+	
+
+	## 3 ##
+	####### ALTERNATIVE TRANSLATE FUNCTION ########
+	> def alt_translate(alt_nucleotides):
+    alt_aa_seq = alt_nucleotides.translate (table=2, to_stop=True, cds=True)
+    return(alt_aa_seq)
+
+
+
+
+	## 4 ##
+	####### PROTEIN MOLECULAR WEIGHT ########
+
+
+	> from Bio.SeqUtils.ProtParam import ProteinAnalysis
+> def find_molecular_weight(aa_seq):
+        aa_string = str(value) 
+        aa_molecular_weight = ProteinAnalysis(aa_string)
+        protein_weight = aa_molecular_weight.molecular_weight()
+        return(protein_weight)
+	
+
+
+
+	## 5 ##
+	####### GC CONTENT ########
+	> from Bio.SeqUtils import GC 
+  cytb_seqs = pull_sequences("bears_cytb.fasta") 
+  bears_df = pd.read_csv("bears_mass.csv") 
+  species_list = list(bears_df.species)
+  bears_df_sp = bears_df.set_index('species')
+> def find_GC(dna_seq):
+  GC_content = GC(dna_seq
+  return(GC_content)
+	
+
+	#%%%%%%%%%%%%%%#
+	###   MAIN   ###
+	#%%%%%%%%%%%%%%#
+	
+
+	## 6 ##
+	## Add two columns to the bears DataFrame: molecular weight and GC content. Set the value to 'NaN' to indicate that these cells are currently empty.
+	> bears_df = bears_df.assign(molecular_weight = 'NaN', GC_content = 'NaN')
+	
+
+
+
+	## 7 ##
+	## Write a for-loop that translates each sequence, computes molecular weight, and computes GC content and adds those data to the data frame
+	
+
+> aa_seq = alt_translate(value)
+> bears_df_sp.loc[key, 'molecular_weight'] = compute_molecular_weight(aa_seq)
+> bears_df_sp.loc[key, 'GC_content'] = getGC(aa_seq)
+
+
+	
+
+
+
+	## 8 ##
+	## Plot a bar-chart of the mass with the x-axes labeled with species names.
+
+
+> bears_df_sp = bears_df_sp.reset_index()
+> import matplotlib as plt
+> from matplotlib import cm 
+> color = cm.inferno_r(np.linspace(.4,.8,10))
+> bears_df_sp.plot(kind= 'bar',x= 'species' , y= 'mass', legend=False, color= color)
+
+
+	## *Q1* What is the largest bear species?
+### Ursus Spelaeus
+	## *Q2* What else is interesting about this species?
+	### Relatively high molecular weight and low GC content 
+
+
+	## 9 ##
+	## Plot molecular weight as a function of GC-content 
+> bears_df_sp.plot(kind= 'bar',x= 'GC_content' , y= 'molecular_weight', legend=False, color= color)
+	
+
+
+
+	## 10 ##
+	## Save the new data frame to a file called "bears_mass_cytb.csv"
+> bears_df_sp.to_csv('bears_mass_cytb.csv')
+	
+
+
+
+	## 11 - BONUS ##
+	## What else can we do with this dataset in Python?
+	### Add functions or anything that might be interesting and fun
